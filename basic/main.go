@@ -25,8 +25,8 @@ func tables(n int) int {
 	return ans
 }
 
-//Sum of naturals number
-func Findsum(n int) {
+// Sum of naturals number
+func findsum(n int) {
 	var i, ans int
 	for i = 1; i <= n; i++ {
 		ans = ans + i
@@ -44,8 +44,8 @@ func swap(a int, b int) {
 	fmt.Printf("After swap a,b : %v %v \n", a, b)
 }
 
-//Find the number closest to n and divisible by m
-func Divisibles(n, m int) {
+// Find the number closest to n and divisible by m
+func divisibles(n, m int) {
 	// var a,b int
 	a, b := n, n
 	for a%m != 0 && b%m != 0 {
@@ -66,32 +66,33 @@ func Divisibles(n, m int) {
 		fmt.Print(a)
 	} else if b%m == 0 {
 		fmt.Print(b)
-	}else {
-	fmt.Print(n)
-	}
-}
-//You are given a cubic dice with 6 faces. All the individual faces have a number printed on them.
-func Oppositeface(n int) {
-	if (n == 1  || n >= 7) {
-		fmt.Printf("in-vaild face")
 	} else {
-	ans:= 7 - n
-	fmt.Print(ans)
+		fmt.Print(n)
 	}
 }
 
-//Nth term of AP from First Two Terms
-func Nthterms(a1, a2, n int) {
-	 Terms:= a1 + (n - 1) * (a2 - a1)
-	 print(Terms)
+// You are given a cubic dice with 6 faces. All the individual faces have a number printed on them.
+func oppositeface(n int) {
+	if n == 1 || n >= 7 {
+		fmt.Printf("in-vaild face")
+	} else {
+		ans := 7 - n
+		fmt.Print(ans)
+	}
+}
+
+// Nth term of AP from First Two Terms
+func nthterms(a1, a2, n int) {
+	Terms := a1 + (n-1)*(a2-a1)
+	print(Terms)
 }
 
 func main() {
 	fmt.Println(even(2))
 	tables(4)
-	Findsum(5)
+	findsum(5)
 	swap(2, 4)
-	Divisibles(-15, 6)
-	Oppositeface(2)
-	Nthterms(2,3,4)
+	divisibles(-15, 6)
+	oppositeface(2)
+	nthterms(2, 3, 4)
 }
