@@ -6,7 +6,7 @@ func modString(a string) {
 	a = "modified"
 }
 func main() {
-	a := "help"
+	a := "Help"
 
 	fmt.Println("Before:", a)
 	modString(a)

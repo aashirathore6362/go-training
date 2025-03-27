@@ -74,7 +74,7 @@ func divisibles(n, m int) {
 // You are given a cubic dice with 6 faces. All the individual faces have a number printed on them.
 func oppositeface(n int) {
 	if n == 1 || n >= 7 {
-		fmt.Printf("in-vaild face")
+		fmt.Printf("Invalid face")
 	} else {
 		ans := 7 - n
 		fmt.Print(ans)

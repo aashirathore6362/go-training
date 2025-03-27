@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
+	"os"
 )
 
 // sum of numbers
@@ -41,10 +43,18 @@ func RecursionOfPower(x, y float64) bool {
 		return RecursionOfPower(x, y/x)
 	}
 }
+func takeInputs() {
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Printf("Type something:")
+	scanner.Scan()
+	input := scanner.Text()
+	fmt.Printf("you typed: %q", input)
+}
 func main() {
 
 	SumOfNumber(-534)
 	ReverseDigits(123)
 	fmt.Print(PowerOfNumber(5, 24))
 	fmt.Print(RecursionOfPower(4, 17))
+	takeInputs()
 }
