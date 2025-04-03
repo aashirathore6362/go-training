@@ -64,6 +64,17 @@ func first(x int, _ int) int { return x }
 
 func zero(int, int) int { return 0 }
 
+func squares() func() int {
+	var x int
+	return func() int {
+
+		x++
+
+		return x * x
+	}
+
+}
+
 func main() {
 	// a := "Help"
 
@@ -76,11 +87,21 @@ func main() {
 	appendSlice()
 	mapPrint()
 
-	fmt.Printf("%d\n", add(1,2)) // "func(int, int) int"
+	fmt.Printf("%d\n", add(1, 2)) // "func(int, int) int"
 
 	fmt.Printf("%T\n", sub) // "func(int, int) int"
 
-	fmt.Printf("%d\n", first(1,1)) // "func(int, int) int"
+	fmt.Printf("%d\n", first(1, 1)) // "func(int, int) int"
 
 	fmt.Printf("%T\n", zero) // "func(int, int) int"
+
+	f := squares()
+
+	fmt.Println(f()) // "1"
+
+	fmt.Println(f()) // "4"
+
+	fmt.Println(f()) // "9"
+
+	fmt.Println(f()) // "16"
 }
