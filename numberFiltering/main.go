@@ -58,7 +58,7 @@ func filterNumbers(input []int, filterFn ...func(int) bool) []int {
 
 }
 
-func filterByAynyCondition(input []int, filterFn ...func(int) bool) []int {
+func filterByAnyCondition(input []int, filterFn ...func(int) bool) []int {
 	var result []int
 	for _, num := range input {
 		for _, fn := range filterFn {

@@ -99,7 +99,7 @@ func TestFilterNumbers_AllConditions(t *testing.T) {
 // Story 8: Given a list of integers, and a set of conditions (odd, even, greater than 5, multiple of 3, prime, and many more such custom conditions that may be dynamically defined by user), write a program to return only the integers from the given list that match ANY of the conditions.
 func TestFilterNumbers_AtOneCondition(t *testing.T) {
 	want := []int{19, 5}
-	got := filterByAynyCondition(want, primeFun, getGreater5, getGreater)
+	got := filterByAnyCondition(want, primeFun, getGreater5, getGreater)
 	if len(want) == 0 {
 		fmt.Println("slice is empty:")
 	}
