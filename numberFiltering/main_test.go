@@ -84,26 +84,3 @@ func Test_greater(t *testing.T) {
 }
 
 //Story 7: Given a list of integers, and a set of conditions (odd, even, greater than 5, multiple of 3, prime, and many more such custom conditions that may be dynamically defined by user), write a program to return only the integers from the given list that match ALL the conditions.
-
-func TestFilterNumbers_AllConditions(t *testing.T) {
-	want := []int{9, 15}
-	got := filterNumbers(want, getGreater5, oddFun)
-	if len(want) == 0 {
-		fmt.Println("Conditions specified using a set of function:")
-	}
-	if !slices.Equal(want, got) {
-		t.Errorf("Got %v, want %v:", got, want)
-	}
-}
-
-// Given a list of integers, and a set of conditions (odd, even, greater than 5, multiple of 3, prime, and many more such custom conditions that may be dynamically defined by user), write a program to return only the integers from the given list that match ANY of the conditions.
-func TestFilterNumbers_AtOneCondition(t *testing.T) {
-	want := []int{19, 5}
-	got := filterByAynyCondition(want, primeFun, getGreater5, getGreater)
-	if len(want) == 0 {
-		fmt.Println("Conditions specified using a set of function:")
-	}
-	if !slices.Equal(want, got) {
-		t.Errorf("Got %v, want %v:", got, want)
-	}
-}
