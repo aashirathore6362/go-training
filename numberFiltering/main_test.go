@@ -89,7 +89,7 @@ func TestFilterNumbers_AllConditions(t *testing.T) {
 	want := []int{9, 15}
 	got := filterNumbers(want, getGreater5, oddFun)
 	if len(want) == 0 {
-		fmt.Println("Conditions specified using a set of function:")
+		fmt.Println("slice is empty:")
 	}
 	if !slices.Equal(want, got) {
 		t.Errorf("Got %v, want %v:", got, want)
@@ -101,7 +101,7 @@ func TestFilterNumbers_AtOneCondition(t *testing.T) {
 	want := []int{19, 5}
 	got := filterByAynyCondition(want, primeFun, getGreater5, getGreater)
 	if len(want) == 0 {
-		fmt.Println("Conditions specified using a set of function:")
+		fmt.Println("slice is empty:")
 	}
 	if !slices.Equal(want, got) {
 		t.Errorf("Got %v, want %v:", got, want)
