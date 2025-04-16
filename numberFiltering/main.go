@@ -4,7 +4,8 @@ import (
 	"math"
 )
 
-// takes int and return bool.
+type Condition func(int) bool
+
 var evenFn = func(x int) bool {
 	return x%2 == 0
 }
@@ -36,8 +37,23 @@ var multiples = func(x int) bool {
 var getGreater = func(x int) bool {
 	return x%3 == 0 && x > 10
 }
-var getGreater5 = func(x int) bool {
-	return x%3 == 0 && x > 5
+
+func greaterThan(n int) Condition {
+	return func(x int) bool {
+		return x > n
+	}
+}
+
+func lessThan(n int) Condition {
+	return func(x int) bool {
+		return x < n
+	}
+}
+
+func multipleOf(n int) Condition {
+	return func(x int) bool {
+		return x%n == 0
+	}
 }
 
 func filterNumbers(input []int, filterFn ...func(int) bool) []int {
@@ -58,11 +74,27 @@ func filterNumbers(input []int, filterFn ...func(int) bool) []int {
 
 }
 
-func filterByAnyCondition(input []int, filterFn ...func(int) bool) []int {
+func filterAllConditions(input []int, conditions ...Condition) []int {
 	var result []int
 	for _, num := range input {
-		for _, fn := range filterFn {
-			if fn(num) {
+		match := true
+		for _, cond := range conditions {
+			if !cond(num) {
+				match = false
+				break
+			}
+		}
+		if match {
+			result = append(result, num)
+		}
+	}
+	return result
+}
+func filterAnyConditions(nums []int, conditions ...Condition) []int {
+	var result []int
+	for _, num := range nums {
+		for _, cond := range conditions {
+			if cond(num) {
 				result = append(result, num)
 				break
 			}
