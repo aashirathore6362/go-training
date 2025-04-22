@@ -43,3 +43,37 @@ func TestRun(t *testing.T) {
 		})
 	}
 }
+func TestCountWord(t *testing.T) {
+	testCases := []struct {
+		name    string
+		path    string
+		want    int
+		wantErr error
+	}{
+		{
+			name: "Word count for a single file.",
+			path: "testdata/file2.txt",
+			want: 3,
+		},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := countWordSingleLine(tt.path)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Errorf("Expected error but got nil")
+				}
+
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
+				}
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Expected %d but got %d", tt.want, got)
+			}
+		})
+
+	}
+}

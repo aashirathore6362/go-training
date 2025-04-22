@@ -23,12 +23,18 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("Lines:", lines)
+	case "-w":
+		wordCount, err := countWordSingleLine(filepath)
+		if err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+		fmt.Println("Words:", wordCount)
 	default:
 		fmt.Println("Unknown option:", option)
-		fmt.Println("Use -l for lines.")
+		fmt.Println("Use -l for lines, -w word count")
 		os.Exit(1)
 	}
-
 }
 func countLinesInFile(filepath string) (int, error) {
 
@@ -38,6 +44,14 @@ func countLinesInFile(filepath string) (int, error) {
 	}
 	lines := strings.Split(string(data), "\n")
 	return len(lines), nil
+}
+func countWordSingleLine(filepath string) (int, error) {
+	data, err := validFile(filepath)
+	if err != nil {
+		return 0, err
+	}
+	wordCount := strings.Fields(string(data))
+	return len(wordCount), err
 }
 func validFile(filepath string) ([]byte, error) {
 	file, err := os.Open(filepath)
