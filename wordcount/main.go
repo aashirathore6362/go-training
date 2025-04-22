@@ -30,6 +30,13 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("Words:", wordCount)
+	case "-c":
+		charCount, err := countCharsInFile(filepath)
+		if err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+		fmt.Println("char:", charCount)
 	default:
 		fmt.Println("Unknown option:", option)
 		fmt.Println("Use -l for lines, -w word count")
@@ -52,6 +59,18 @@ func countWordInLine(filepath string) (int, error) {
 	}
 	wordCount := strings.Fields(string(data))
 	return len(wordCount), err
+}
+func countCharsInFile(filepath string) (int, error) {
+	data, err := validFile(filepath)
+	if err != nil {
+		return 0, err
+	}
+	charCount := 0
+	wordCount := strings.Fields(string(data))
+	for _, word := range wordCount {
+		charCount = charCount + len(word)
+	}
+	return charCount + len(wordCount) - 1, nil
 }
 func validFile(filepath string) ([]byte, error) {
 	file, err := os.Open(filepath)
