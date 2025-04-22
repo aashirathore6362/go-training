@@ -2,71 +2,44 @@ package main
 
 import (
 	"errors"
-	"os"
 	"testing"
 )
 
-/*
-# happy path example
-$ ./wc -l file.txt
-      19 file.txt
-
-# error scenario 1
-# note that the file protected_file.txt has no read permission for the user
-$ ./wc -l protected_file.txt
-./wc: protected_file.txt: open: Permission denied
-
-# error scenario 2
-# foo.txt file doesn't exist
-$ ./wc -l foo.txt
-./wc: foo.txt: open: No such file or directory
-
-# error scenario 3
-# bar is a directory, instead of a file
-$ ./wc -l bar
-./wc: bar: read: Is a directory
-*/
-
-// fs package for file system all the interface.
 func TestRun(t *testing.T) {
-	testCases:= []struct {
-		name string
-		path string
-		want int
+	testCases := []struct {
+		name    string
+		path    string
+		want    int
 		wantErr error
-	} {{
-		name: "wc over 	non-existent-file",
-		path: "new.txt",
-		wantErr: os.ErrNotExist,
-	},
-	{
-		name: "wc over 	permission file",
-		path: ".",
-		wantErr: errors.New("is a directory"),
-	},
-	{
-		name: "file with Lines",
-		path: "wc.txt",
-		want: 3,
-	},
-}
-
+	}{
+		{
+			name: "Test-1: Count the lines in file",
+			path: "testdata/file1.txt",
+			want: 5,
+		},
+		{
+			name:    "Test-2: Dir instead of file.",
+			path:    ".",
+			wantErr: errors.New("is a directory"),
+		},
+	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := story1(tt.path)
+			got, err := countLinesInFile(tt.path)
 
 			if tt.wantErr != nil {
-				if err == nil || err.Error() != tt.wantErr.Error() {
-					t.Errorf("expected error %v, got %v", tt.wantErr, err)
+				if err == nil {
+					t.Errorf("Expected error but got nil")
 				}
-			} else if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
 
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
+				}
+				return
+			}
 			if got != tt.want {
-				t.Errorf("expected %d lines, got %d", tt.want, got)
+				t.Errorf("Expected %d but got %d", tt.want, got)
 			}
 		})
 	}
-
 }

@@ -1,5 +1,5 @@
 build:
-    go build -o ./bin/go-wc .
+	go build -o ./bin/wordcount .
 
 test:
-    go test -v
+	go test -v

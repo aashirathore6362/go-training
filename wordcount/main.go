@@ -2,23 +2,59 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 )
-func story1(filepath string) (int, error) {
-	file, err := os.Open(filepath)
-	if err!= nil {
+
+func main() {
+	args := os.Args
+	if len(args) < 3 {
+		fmt.Println("Usage: binary -l <filename>")
+		os.Exit(1)
+	}
+	option := args[1]
+	filepath := args[2]
+	switch option {
+	case "-l":
+		lines, err := countLinesInFile(filepath)
+		if err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+		fmt.Println("Lines:", lines)
+	default:
+		fmt.Println("Unknown option:", option)
+		fmt.Println("Use -l for lines.")
+		os.Exit(1)
+	}
+
+}
+func countLinesInFile(filepath string) (int, error) {
+
+	data, err := validFile(filepath)
+	if err != nil {
 		return 0, err
 	}
-	defer file.Close()
-	info,_:=file.Stat()
-	if info.IsDir(){
-		return 0,errors.New("is a directory")
-	}
-	data, err:= os.ReadFile(filepath)
-	if err!=nil {
-		return 0,nil
-	}
-	lines:= strings.Split(string(data), "\n")
+	lines := strings.Split(string(data), "\n")
 	return len(lines), nil
+}
+func validFile(filepath string) ([]byte, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if info.IsDir() {
+		return nil, errors.New("is a directory")
+	}
+	data, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
