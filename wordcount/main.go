@@ -24,7 +24,7 @@ func main() {
 		}
 		fmt.Println("Lines:", lines)
 	case "-w":
-		wordCount, err := countWordSingleLine(filepath)
+		wordCount, err := countWordInLine(filepath)
 		if err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
