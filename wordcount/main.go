@@ -9,38 +9,51 @@ import (
 
 func main() {
 	args := os.Args
+	if len(args) == 2 {
+		filename := args[1]
+		linesCount, _ := countLinesInFile(filename)
+		wordCount, _ := countWordInLine(filename)
+		charCount, _ := countCharsInFile(filename)
+
+		fmt.Printf("%7d %7d %7d %s\n", linesCount, wordCount, charCount, filename)
+		return
+	}
+
 	if len(args) < 3 {
 		fmt.Println("Usage: binary -l <filename>")
 		os.Exit(1)
 	}
 	option := args[1]
 	filepath := args[2]
-	switch option {
-	case "-l":
-		lines, err := countLinesInFile(filepath)
-		if err != nil {
-			fmt.Println("Error:", err)
+
+	for i := 1; i < len(args)-1; i++ {
+		switch args[i] {
+		case "-l":
+			linesCount, err := countLinesInFile(filepath)
+			if err != nil {
+				fmt.Println("Error:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Lines:", linesCount)
+		case "-w":
+			wordCount, err := countWordInLine(filepath)
+			if err != nil {
+				fmt.Println("Error:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Words:", wordCount)
+		case "-c":
+			charCount, err := countCharsInFile(filepath)
+			if err != nil {
+				fmt.Println("Error:", err)
+				os.Exit(1)
+			}
+			fmt.Println("char:", charCount)
+		default:
+			fmt.Println("Unknown option:", option)
+			fmt.Println("Use -l for lines, -w word count, -c for characters")
 			os.Exit(1)
 		}
-		fmt.Println("Lines:", lines)
-	case "-w":
-		wordCount, err := countWordInLine(filepath)
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-		fmt.Println("Words:", wordCount)
-	case "-c":
-		charCount, err := countCharsInFile(filepath)
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-		fmt.Println("char:", charCount)
-	default:
-		fmt.Println("Unknown option:", option)
-		fmt.Println("Use -l for lines, -w word count")
-		os.Exit(1)
 	}
 }
 func countLinesInFile(filepath string) (int, error) {

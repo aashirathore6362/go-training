@@ -78,35 +78,35 @@ func TestCountWord(t *testing.T) {
 	}
 }
 func TestCountChar(t *testing.T) {
-    testCases := []struct {
-        name    string
-        path    string
-        want    int
-        wantErr error
-    }{
-        {
-            name: "Character count for a single file",
-            path: "testdata/file2.txt",
-            want: 16,
-        },
-    }
-    for _, tt := range testCases {
-        t.Run(tt.name, func(t *testing.T) {
-            got, err := countCharsInFile(tt.path)
+	testCases := []struct {
+		name    string
+		path    string
+		want    int
+		wantErr error
+	}{
+		{
+			name: "Character count for a single file",
+			path: "testdata/file2.txt",
+			want: 16,
+		},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := countCharsInFile(tt.path)
 
-            if tt.wantErr != nil {
-                if err == nil {
-                    t.Errorf("Expected error but got nil")
-                }
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Errorf("Expected error but got nil")
+				}
 
-                if err.Error() != tt.wantErr.Error() {
-                    t.Errorf("Expected error %q but got %q", tt.wantErr, err)
-                }
-                return
-            }
-            if got != tt.want {
-                t.Errorf("Expected %d but got %d", tt.want, got)
-            }
-        })
-    }
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
+				}
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Expected %d but got %d", tt.want, got)
+			}
+		})
+	}
 }
