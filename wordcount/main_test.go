@@ -58,7 +58,7 @@ func TestCountWord(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := countWordSingleLine(tt.path)
+			got, err := countWordInLine(tt.path)
 
 			if tt.wantErr != nil {
 				if err == nil {

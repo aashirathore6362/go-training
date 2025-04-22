@@ -45,7 +45,7 @@ func countLinesInFile(filepath string) (int, error) {
 	lines := strings.Split(string(data), "\n")
 	return len(lines), nil
 }
-func countWordSingleLine(filepath string) (int, error) {
+func countWordInLine(filepath string) (int, error) {
 	data, err := validFile(filepath)
 	if err != nil {
 		return 0, err
