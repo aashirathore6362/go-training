@@ -7,57 +7,86 @@ import (
 	"strings"
 )
 
+type FileStat struct {
+	lines int
+	words int
+	chars int
+}
+
 func main() {
-	args := os.Args
-	if len(args) == 2 {
-		filename := args[1]
-		linesCount, _ := countLinesInFile(filename)
-		wordCount, _ := countWordInLine(filename)
-		charCount, _ := countCharsInFile(filename)
+	args := os.Args[1:]
 
-		fmt.Printf("%7d %7d %7d %s\n", linesCount, wordCount, charCount, filename)
-		return
-	}
-
-	if len(args) < 3 {
-		fmt.Println("Usage: binary -l <filename>")
+	if len(args) == 0 {
+		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
 		os.Exit(1)
 	}
-	option := args[1]
-	filepath := args[2]
+	var flags []string
+	var filename string
 
-	for i := 1; i < len(args)-1; i++ {
-		switch args[i] {
+	for _, arg := range args {
+		if arg == "-l" || arg == "-w" || arg == "-c" {
+			flags = append(flags, arg)
+		} else {
+			filename = arg
+		}
+	}
+
+	if filename == "" {
+		fmt.Println("Required filename.")
+		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
+		os.Exit(1)
+	}
+
+	stat, err := getAllCondition(filename)
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	if len(flags) == 0 {
+		flags = []string{"-l", "-w", "-c"}
+	}
+
+	for _, flag := range flags {
+		switch flag {
 		case "-l":
-			linesCount, err := countLinesInFile(filepath)
-			if err != nil {
-				fmt.Println("Error:", err)
-				os.Exit(1)
-			}
-			fmt.Println("Lines:", linesCount)
+			fmt.Printf("%7d ", stat.lines)
 		case "-w":
-			wordCount, err := countWordInLine(filepath)
-			if err != nil {
-				fmt.Println("Error:", err)
-				os.Exit(1)
-			}
-			fmt.Println("Words:", wordCount)
+			fmt.Printf("%7d ", stat.words)
 		case "-c":
-			charCount, err := countCharsInFile(filepath)
-			if err != nil {
-				fmt.Println("Error:", err)
-				os.Exit(1)
-			}
-			fmt.Println("char:", charCount)
+			fmt.Printf("%7d ", stat.chars)
 		default:
-			fmt.Println("Unknown option:", option)
-			fmt.Println("Use -l for lines, -w word count, -c for characters")
+			fmt.Printf("Unknown flag: %s\n", flag)
 			os.Exit(1)
 		}
 	}
+	fmt.Printf("%s\n", filename)
 }
-func countLinesInFile(filepath string) (int, error) {
 
+func getAllCondition(filepath string) (FileStat, error) {
+	countLines, err := countLinesInFile(filepath)
+	if err != nil {
+		return FileStat{}, err
+	}
+
+	countWords, err := countWordInLine(filepath)
+	if err != nil {
+		return FileStat{}, err
+	}
+
+	countChar, err := countCharsInFile(filepath)
+	if err != nil {
+		return FileStat{}, err
+	}
+
+	return FileStat{
+		lines: countLines,
+		words: countWords,
+		chars: countChar,
+	}, nil
+}
+
+func countLinesInFile(filepath string) (int, error) {
 	data, err := validFile(filepath)
 	if err != nil {
 		return 0, err
@@ -65,32 +94,36 @@ func countLinesInFile(filepath string) (int, error) {
 	lines := strings.Split(string(data), "\n")
 	return len(lines), nil
 }
+
 func countWordInLine(filepath string) (int, error) {
 	data, err := validFile(filepath)
 	if err != nil {
 		return 0, err
 	}
-	wordCount := strings.Fields(string(data))
-	return len(wordCount), err
+	words := strings.Fields(string(data))
+	return len(words), nil
 }
+
 func countCharsInFile(filepath string) (int, error) {
 	data, err := validFile(filepath)
 	if err != nil {
 		return 0, err
 	}
 	charCount := 0
-	wordCount := strings.Fields(string(data))
-	for _, word := range wordCount {
-		charCount = charCount + len(word)
+	words := strings.Fields(string(data))
+	for _, word := range words {
+		charCount += len(word)
 	}
-	return charCount + len(wordCount) - 1, nil
+	return charCount + len(words) - 1, nil
 }
+
 func validFile(filepath string) ([]byte, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
+
 	info, err := file.Stat()
 	if err != nil {
 		return nil, err
@@ -98,9 +131,11 @@ func validFile(filepath string) ([]byte, error) {
 	if info.IsDir() {
 		return nil, errors.New("is a directory")
 	}
+
 	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
+
 	return data, nil
 }
