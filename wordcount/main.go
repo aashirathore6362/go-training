@@ -20,41 +20,35 @@ func main() {
 		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
 		os.Exit(1)
 	}
-	var flags []string
-	var filename string
 
-	for _, arg := range args {
-		if arg == "-l" || arg == "-w" || arg == "-c" {
-			flags = append(flags, arg)
-		} else {
-			filename = arg
-		}
-	}
-
+	flag, filename := checkFlags(args)
 	if filename == "" {
 		fmt.Println("Required filename.")
 		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
 		os.Exit(1)
 	}
 
-	stat, err := getAllCondition(filename)
+	all, err := getAllCondition(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-
-	if len(flags) == 0 {
-		flags = []string{"-l", "-w", "-c"}
+	
+	if len(flag) == 0 {
+		flag = []string{"-l", "-w", "-c"}
 	}
+	printCases(all, flag, filename)
+}
 
-	for _, flag := range flags {
-		switch flag {
+func printCases(stat FileStat, flag []string, filename string) {
+	for _, cases := range flag {
+		switch cases {
 		case "-l":
-			fmt.Printf("%7d ", stat.lines)
+			fmt.Printf("%8d ", stat.lines)
 		case "-w":
-			fmt.Printf("%7d ", stat.words)
+			fmt.Printf("%8d ", stat.words)
 		case "-c":
-			fmt.Printf("%7d ", stat.chars)
+			fmt.Printf("%8d ", stat.chars)
 		default:
 			fmt.Printf("Unknown flag: %s\n", flag)
 			os.Exit(1)
@@ -63,17 +57,27 @@ func main() {
 	fmt.Printf("%s\n", filename)
 }
 
+func checkFlags(arg []string) ([]string, string) {
+	var f []string
+	var filename string
+	for _, arg := range arg {
+		if arg == "-l" || arg == "-w" || arg == "-c" {
+			f = append(f, arg)
+		} else {
+			filename = arg
+		}
+	}
+	return f, filename
+}
 func getAllCondition(filepath string) (FileStat, error) {
 	countLines, err := countLinesInFile(filepath)
 	if err != nil {
 		return FileStat{}, err
 	}
-
 	countWords, err := countWordInLine(filepath)
 	if err != nil {
 		return FileStat{}, err
 	}
-
 	countChar, err := countCharsInFile(filepath)
 	if err != nil {
 		return FileStat{}, err

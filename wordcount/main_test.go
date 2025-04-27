@@ -110,3 +110,46 @@ func TestCountChar(t *testing.T) {
 		})
 	}
 }
+func TestAllCondition(t *testing.T) {
+	testCases := []struct {
+		name    string
+		path    string
+		want    FileStat
+		wantErr error
+	}{
+		{
+			name: "Character count for a single file",
+			path: "testdata/file1.txt",
+			want: FileStat{
+				lines: 5,
+				words: 5,
+				chars: 21,
+			},
+		},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getAllCondition(tt.path)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Errorf("Expected error but got nil")
+				}
+
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
+				}
+				return
+			}
+			if got.lines != tt.want.lines {
+				t.Errorf("Expected %d lines but got %d", tt.want.lines, got.lines)
+			}
+			if got.words != tt.want.words {
+				t.Errorf("Expected %d words but got %d", tt.want.words, got.words)
+			}
+			if got.chars != tt.want.chars {
+				t.Errorf("Expected %d chars but got %d", tt.want.chars, got.chars)
+			}
+		})
+	}
+}
