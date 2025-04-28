@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"testing"
+
 )
 
 func TestRun(t *testing.T) {
@@ -129,7 +130,7 @@ func TestAllCondition(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getAllCondition(tt.path)
+			got, err := count(tt.path)
 
 			if tt.wantErr != nil {
 				if err == nil {

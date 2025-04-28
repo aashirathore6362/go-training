@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 )
 
 type FileStat struct {
@@ -14,62 +16,72 @@ type FileStat struct {
 }
 
 func main() {
-	args := os.Args[1:]
+
+	lineflag := flag.Bool("l", false, "Lines")
+	wordflag := flag.Bool("w", false, "Words")
+	charflag := flag.Bool("c", false, "Characters")
+
+	flag.Parse()
+
+	args := flag.Args()
 
 	if len(args) == 0 {
-		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
+		fmt.Println("Usage: wc [-l] [-w] [-c] <filenames>")
 		os.Exit(1)
 	}
 
-	flag, filename := checkFlags(args)
-	if filename == "" {
-		fmt.Println("Required filename.")
-		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
-		os.Exit(1)
+	var getflag []string
+	if *lineflag {
+		getflag = append(getflag, "-l")
+	}
+	if *wordflag {
+		getflag = append(getflag, "-w")
+	}
+	if *charflag {
+		getflag = append(getflag, "-c")
 	}
 
-	all, err := getAllCondition(filename)
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
+	if len(getflag) == 0 {
+		getflag = []string{"-l", "-w", "-c"}
 	}
-	
-	if len(flag) == 0 {
-		flag = []string{"-l", "-w", "-c"}
+
+	var wg sync.WaitGroup
+
+	for _, filename := range args {
+		wg.Add(1)
+		go func(file string) {
+			defer wg.Done()
+
+			all, err := count(file)
+			if err != nil {
+				fmt.Printf("Error in file %s: %v\n", file, err)
+				return
+			}
+			printCases(all, getflag, file)
+		}(filename)
 	}
-	printCases(all, flag, filename)
+
+	wg.Wait()
 }
 
 func printCases(stat FileStat, flag []string, filename string) {
 	for _, cases := range flag {
 		switch cases {
 		case "-l":
-			fmt.Printf("%8d ", stat.lines)
+			fmt.Printf("%8d", stat.lines)
 		case "-w":
-			fmt.Printf("%8d ", stat.words)
+			fmt.Printf("%8d", stat.words)
 		case "-c":
-			fmt.Printf("%8d ", stat.chars)
+			fmt.Printf("%8d", stat.chars)
 		default:
 			fmt.Printf("Unknown flag: %s\n", flag)
 			os.Exit(1)
 		}
 	}
-	fmt.Printf("%s\n", filename)
+	fmt.Printf(" %s\n", filename)
 }
 
-func checkFlags(arg []string) ([]string, string) {
-	var f []string
-	var filename string
-	for _, arg := range arg {
-		if arg == "-l" || arg == "-w" || arg == "-c" {
-			f = append(f, arg)
-		} else {
-			filename = arg
-		}
-	}
-	return f, filename
-}
-func getAllCondition(filepath string) (FileStat, error) {
+func count(filepath string) (FileStat, error) {
 	countLines, err := countLinesInFile(filepath)
 	if err != nil {
 		return FileStat{}, err
@@ -91,7 +103,7 @@ func getAllCondition(filepath string) (FileStat, error) {
 }
 
 func countLinesInFile(filepath string) (int, error) {
-	data, err := validFile(filepath)
+	data, err := readFile(filepath)
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +112,7 @@ func countLinesInFile(filepath string) (int, error) {
 }
 
 func countWordInLine(filepath string) (int, error) {
-	data, err := validFile(filepath)
+	data, err := readFile(filepath)
 	if err != nil {
 		return 0, err
 	}
@@ -109,7 +121,7 @@ func countWordInLine(filepath string) (int, error) {
 }
 
 func countCharsInFile(filepath string) (int, error) {
-	data, err := validFile(filepath)
+	data, err := readFile(filepath)
 	if err != nil {
 		return 0, err
 	}
@@ -121,25 +133,24 @@ func countCharsInFile(filepath string) (int, error) {
 	return charCount + len(words) - 1, nil
 }
 
-func validFile(filepath string) ([]byte, error) {
-	file, err := os.Open(filepath)
+func validateFile(filepath string) error {
+	info, err := os.Stat(filepath)
 	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
+		return err
 	}
 	if info.IsDir() {
-		return nil, errors.New("is a directory")
+		return errors.New("is a directory")
 	}
+	return nil
+}
 
+func readFile(filepath string) ([]byte, error) {
+	if err := validateFile(filepath); err != nil {
+		return nil, err
+	}
 	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
-
 	return data, nil
 }
