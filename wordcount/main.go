@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 )
 
 type FileStat struct {
@@ -21,23 +22,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	flag, filename := checkFlags(args)
-	if filename == "" {
+	flag, filenames := checkFlags(args)
+	if len(filenames) == 0 {
 		fmt.Println("Required filename.")
 		fmt.Println("Usage: wc [-l] [-w] [-c] <filename>")
 		os.Exit(1)
 	}
-
-	all, err := getAllCondition(filename)
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
-	
 	if len(flag) == 0 {
 		flag = []string{"-l", "-w", "-c"}
 	}
-	printCases(all, flag, filename)
+	var wg sync.WaitGroup
+	for _, filename := range filenames {
+		wg.Add(1)
+		go func (file string)  {
+			defer wg.Done()
+			all, err := getAllCondition(file)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			printCases(all,flag,file)
+		}(filename)
+	}
+	wg.Wait()
 }
 
 func printCases(stat FileStat, flag []string, filename string) {
@@ -57,17 +64,17 @@ func printCases(stat FileStat, flag []string, filename string) {
 	fmt.Printf("%s\n", filename)
 }
 
-func checkFlags(arg []string) ([]string, string) {
+func checkFlags(arg []string) ([]string, []string) {
 	var f []string
-	var filename string
+	var filenames []string
 	for _, arg := range arg {
 		if arg == "-l" || arg == "-w" || arg == "-c" {
 			f = append(f, arg)
 		} else {
-			filename = arg
+			filenames = append(filenames,arg)
 		}
 	}
-	return f, filename
+	return f, filenames
 }
 func getAllCondition(filepath string) (FileStat, error) {
 	countLines, err := countLinesInFile(filepath)
