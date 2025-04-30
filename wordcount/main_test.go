@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"testing"
-
 )
 
 func TestRun(t *testing.T) {
@@ -13,6 +12,11 @@ func TestRun(t *testing.T) {
 		want    int
 		wantErr error
 	}{
+		{
+			name: "Test-1: Count the lines in file",
+			path: "testdata/file2.txt",
+			want: 0,
+		},
 		{
 			name: "Test-1: Count the lines in file",
 			path: "testdata/file1.txt",
@@ -53,8 +57,13 @@ func TestCountWord(t *testing.T) {
 	}{
 		{
 			name: "Word count for a single file.",
+			path: "testdata/file1.txt",
+			want: 5,
+		},
+		{
+			name: "Word count for a single file.",
 			path: "testdata/file2.txt",
-			want: 3,
+			want: 0,
 		},
 	}
 	for _, tt := range testCases {
@@ -87,8 +96,8 @@ func TestCountChar(t *testing.T) {
 	}{
 		{
 			name: "Character count for a single file",
-			path: "testdata/file2.txt",
-			want: 16,
+			path: "testdata/file1.txt",
+			want: 21,
 		},
 	}
 	for _, tt := range testCases {
@@ -119,7 +128,7 @@ func TestAllCondition(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Character count for a single file",
+			name: "Test lines, words, chars count for a single file",
 			path: "testdata/file1.txt",
 			want: FileStat{
 				lines: 5,

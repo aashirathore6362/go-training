@@ -22,13 +22,7 @@ func main() {
 	charflag := flag.Bool("c", false, "Characters")
 
 	flag.Parse()
-
 	args := flag.Args()
-
-	if len(args) == 0 {
-		fmt.Println("Usage: wc [-l] [-w] [-c] <filenames>")
-		os.Exit(1)
-	}
 
 	var getflag []string
 	if *lineflag {
@@ -40,7 +34,6 @@ func main() {
 	if *charflag {
 		getflag = append(getflag, "-c")
 	}
-
 	if len(getflag) == 0 {
 		getflag = []string{"-l", "-w", "-c"}
 	}
@@ -104,11 +97,17 @@ func count(filepath string) (FileStat, error) {
 
 func countLinesInFile(filepath string) (int, error) {
 	data, err := readFile(filepath)
+	count := 0
 	if err != nil {
 		return 0, err
 	}
-	lines := strings.Split(string(data), "\n")
-	return len(lines), nil
+	lineCount := strings.Split(string(data), "\n")
+	for _, line := range lineCount {
+		if strings.TrimSpace(line) != "" {
+			count++
+		}
+	}
+	return count, nil
 }
 
 func countWordInLine(filepath string) (int, error) {
@@ -116,8 +115,8 @@ func countWordInLine(filepath string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	words := strings.Fields(string(data))
-	return len(words), nil
+	wordsCount := strings.Fields(string(data))
+	return len(wordsCount), nil
 }
 
 func countCharsInFile(filepath string) (int, error) {
@@ -131,6 +130,12 @@ func countCharsInFile(filepath string) (int, error) {
 		charCount += len(word)
 	}
 	return charCount + len(words) - 1, nil
+	// for _, c := range string(data) {
+	// 	if !unicode.IsSpace(c) {
+	// 		charCount++
+	// 	}
+	// }
+	// return charCount, nil
 }
 
 func validateFile(filepath string) error {
