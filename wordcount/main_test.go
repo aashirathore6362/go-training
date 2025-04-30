@@ -123,6 +123,7 @@ func TestCountChar(t *testing.T) {
 func TestAllCondition(t *testing.T) {
 	testCases := []struct {
 		name    string
+		options wordCountOptions
 		path    string
 		want    FileStat
 		wantErr error
@@ -130,6 +131,11 @@ func TestAllCondition(t *testing.T) {
 		{
 			name: "Test lines, words, chars count for a single file",
 			path: "testdata/file1.txt",
+			options: wordCountOptions{
+				isLineCount: true,
+				isWordCount: true,
+				isCharCount: true,
+			},
 			want: FileStat{
 				lines: 5,
 				words: 5,
@@ -139,7 +145,7 @@ func TestAllCondition(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := count(tt.path)
+			got, err := count(tt.path, tt.options)
 
 			if tt.wantErr != nil {
 				if err == nil {
