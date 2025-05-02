@@ -78,42 +78,46 @@ func printStats(stat FileStat, options wordCountOptions, filename string) {
 
 func count(filepath string, options wordCountOptions) (FileStat, error) {
 	var stats FileStat
-
+	data, err := readFile(filepath)
+	if err != nil {
+		return FileStat{}, err
+	}
+	// files := string(data)
 	if options.isLineCount {
-		stats.lines, _ = countLinesInFile(filepath)
+		stats.lines, _ = countLinesInFile(data)
 	}
 	if options.isWordCount {
-		stats.words, _ = countWordInLine(filepath)
+		stats.words, _ = countWordInLine(data)
 	}
 	if options.isCharCount {
-		stats.chars, _ = countCharsInFile(filepath)
+		stats.chars, _ = countCharsInFile(data)
 	}
 
 	return stats, nil
 }
-func countLinesInFile(filepath string) (int, error) {
-	data, err := readFile(filepath)
-	if err != nil {
-		return 0, err
-	}
+func countLinesInFile(data []byte) (int, error) {
+	// data, err := readFile(filepath)
+	// if err != nil {
+	// 	return 0, err
+	// }
 	lines := strings.Split(string(data), "\n")
 	return len(lines), nil
 }
 
-func countWordInLine(filepath string) (int, error) {
-	data, err := readFile(filepath)
-	if err != nil {
-		return 0, err
-	}
+func countWordInLine(data []byte) (int, error) {
+	// data, err := readFile(filepath)
+	// if err != nil {
+	// 	return 0, err
+	// }
 	words := strings.Fields(string(data))
 	return len(words), nil
 }
 
-func countCharsInFile(filepath string) (int, error) {
-	data, err := readFile(filepath)
-	if err != nil {
-		return 0, err
-	}
+func countCharsInFile(data []byte) (int, error) {
+	// data, err := readFile(filepath)
+	// if err != nil {
+	// 	return 0, err
+	// }
 	charCount := 0
 	words := strings.Fields(string(data))
 	for _, word := range words {

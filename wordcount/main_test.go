@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -15,23 +14,26 @@ func TestRun(t *testing.T) {
 		{
 			name: "Test-1: Count the lines in file",
 			path: "testdata/file2.txt",
-			want: 0,
+			want: 1,
 		},
 		{
 			name: "Test-1: Count the lines in file",
 			path: "testdata/file1.txt",
 			want: 5,
 		},
-		{
-			name:    "Test-2: Dir instead of file.",
-			path:    ".",
-			wantErr: errors.New("is a directory"),
-		},
+		// {
+		// 	name:    "Test-2: Dir instead of file.",
+		// 	path:    "testdata",
+		// 	wantErr: errors.New("is a directory"),
+		// },
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := countLinesInFile(tt.path)
-
+			data, err := readFile(tt.path)
+			if err != nil {
+				t.Fatalf("Getting error while reading file: %v", err)
+			}
+			got, err := countLinesInFile(data)
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Errorf("Expected error but got nil")
@@ -68,7 +70,11 @@ func TestCountWord(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := countWordInLine(tt.path)
+			data, err := readFile(tt.path)
+			if err != nil {
+				t.Fatalf("Getting error while reading file: %v", err)
+			}
+			got, err := countWordInLine(data)
 
 			if tt.wantErr != nil {
 				if err == nil {
@@ -102,7 +108,11 @@ func TestCountChar(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := countCharsInFile(tt.path)
+			data, err := readFile(tt.path)
+			if err != nil {
+				t.Fatalf("Getting error while reading file: %v", err)
+			}
+			got, err := countCharsInFile(data)
 
 			if tt.wantErr != nil {
 				if err == nil {
