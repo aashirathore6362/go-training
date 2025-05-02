@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -23,7 +22,7 @@ type wordCountOptions struct {
 
 func main() {
 	// var options wordCountOptions
-	options := wordCountOptions{}
+	// options := wordCountOptions{}
 	lineflag := flag.Bool("l", false, "Count lines")
 	wordflag := flag.Bool("w", false, "Count words")
 	charflag := flag.Bool("c", false, "Count characters")
@@ -31,19 +30,7 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 
-	if !*lineflag && !*wordflag && !*charflag {
-		options = wordCountOptions{
-			isLineCount: true,
-			isWordCount: true,
-			isCharCount: true,
-		}
-	} else {
-		options = wordCountOptions{
-			isLineCount: *lineflag,
-			isWordCount: *wordflag,
-			isCharCount: *charflag,
-		}
-	}
+	options := optionCount(*lineflag, *wordflag, *charflag)
 
 	var wg sync.WaitGroup
 
@@ -61,6 +48,22 @@ func main() {
 	}
 
 	wg.Wait()
+}
+
+func optionCount(lineflag, wordflag, charflag bool) wordCountOptions {
+	if !lineflag && !wordflag && !charflag {
+		// No flags given, enable all
+		return wordCountOptions{
+			isLineCount: true,
+			isWordCount: true,
+			isCharCount: true,
+		}
+	}
+	return wordCountOptions{
+		isLineCount: lineflag,
+		isWordCount: wordflag,
+		isCharCount: charflag,
+	}
 }
 
 func printStats(stat FileStat, options wordCountOptions, filename string) {
@@ -123,7 +126,10 @@ func countCharsInFile(data []byte) (int, error) {
 	for _, word := range words {
 		charCount += len(word)
 	}
-	return charCount + len(words) - 1, nil
+	if len(words) > 0 {
+		return charCount + len(words) - 1, nil
+	}
+	return 0, nil
 }
 
 func validateFile(filepath string) error {
@@ -132,18 +138,25 @@ func validateFile(filepath string) error {
 		return err
 	}
 	if info.IsDir() {
-		return errors.New("is a directory")
+		return fmt.Errorf("%s is a directory", filepath)
 	}
 	return nil
 }
-
-func readFile(filepath string) ([]byte, error) {
-	if err := validateFile(filepath); err != nil {
-		return nil, err
-	}
+func readFileData(filepath string) ([]byte, error) {
 	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
+}
+func readFile(filepath string) ([]byte, error) {
+	if err := validateFile(filepath); err != nil {
+		return nil, err
+	}
+	return readFileData(filepath)
+	// data, err := os.ReadFile(filepath)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return data, nil
 }

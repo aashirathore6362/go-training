@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"strings"
 	"testing"
 )
 
@@ -17,28 +19,42 @@ func TestRun(t *testing.T) {
 			want: 1,
 		},
 		{
-			name: "Test-1: Count the lines in file",
+			name: "Count the lines in file",
 			path: "testdata/file1.txt",
 			want: 5,
 		},
-		// {
-		// 	name:    "Test-2: Dir instead of file.",
-		// 	path:    "testdata",
-		// 	wantErr: errors.New("is a directory"),
-		// },
+		{
+			name:    "Dir instead of file.",
+			path:    "testdata",
+			wantErr: errors.New("is a directory"),
+		},
+		{
+			name:    "File does not exist",
+			path:    "testdata/missing.txt",
+			wantErr: errors.New("no such file"),
+		},
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			data, err := readFile(tt.path)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatalf("Expected error but got nil")
+				}
+				if !strings.Contains(err.Error(), tt.wantErr.Error()) {
+					t.Fatalf("Expected error to contain %q but got %q", tt.wantErr.Error(), err.Error())
+				}
+				return
+			}
 			if err != nil {
-				t.Fatalf("Getting error while reading file: %v", err)
+				t.Fatalf("Unexpected error while reading file: %v", err)
 			}
 			got, err := countLinesInFile(data)
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Errorf("Expected error but got nil")
 				}
-
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
 				}
@@ -105,6 +121,11 @@ func TestCountChar(t *testing.T) {
 			path: "testdata/file1.txt",
 			want: 21,
 		},
+		{
+			name: "Char count for a single file.",
+			path: "testdata/file2.txt",
+			want: 0,
+		},
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -148,6 +169,19 @@ func TestAllCondition(t *testing.T) {
 			},
 			want: FileStat{
 				lines: 5,
+				words: 5,
+				chars: 21,
+			},
+		},
+		{
+			name: "Test lines, words, chars count for a single file",
+			path: "testdata/file1.txt",
+			options: wordCountOptions{
+				isLineCount: false,
+				isWordCount: true,
+				isCharCount: true,
+			},
+			want: FileStat{
 				words: 5,
 				chars: 21,
 			},
