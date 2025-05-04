@@ -6,23 +6,14 @@ import (
 	"testing"
 )
 
-func TestRun(t *testing.T) {
-	testCases := []struct {
+func TestWordCount(t *testing.T) {
+	testdatas := []struct {
 		name    string
+		options wordCountOptions
 		path    string
-		want    int
+		want    FileStat
 		wantErr error
 	}{
-		{
-			name: "Test-1: Count the lines in file",
-			path: "testdata/file2.txt",
-			want: 1,
-		},
-		{
-			name: "Count the lines in file",
-			path: "testdata/file1.txt",
-			want: 5,
-		},
 		{
 			name:    "Dir instead of file.",
 			path:    "testdata",
@@ -33,132 +24,6 @@ func TestRun(t *testing.T) {
 			path:    "testdata/missing.txt",
 			wantErr: errors.New("no such file"),
 		},
-	}
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			data, err := readFile(tt.path)
-
-			if tt.wantErr != nil {
-				if err == nil {
-					t.Fatalf("Expected error but got nil")
-				}
-				if !strings.Contains(err.Error(), tt.wantErr.Error()) {
-					t.Fatalf("Expected error to contain %q but got %q", tt.wantErr.Error(), err.Error())
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("Unexpected error while reading file: %v", err)
-			}
-			got, err := countLinesInFile(data)
-			if tt.wantErr != nil {
-				if err == nil {
-					t.Errorf("Expected error but got nil")
-				}
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
-				}
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Expected %d but got %d", tt.want, got)
-			}
-		})
-	}
-}
-func TestCountWord(t *testing.T) {
-	testCases := []struct {
-		name    string
-		path    string
-		want    int
-		wantErr error
-	}{
-		{
-			name: "Word count for a single file.",
-			path: "testdata/file1.txt",
-			want: 5,
-		},
-		{
-			name: "Word count for a single file.",
-			path: "testdata/file2.txt",
-			want: 0,
-		},
-	}
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			data, err := readFile(tt.path)
-			if err != nil {
-				t.Fatalf("Getting error while reading file: %v", err)
-			}
-			got, err := countWordInLine(data)
-
-			if tt.wantErr != nil {
-				if err == nil {
-					t.Errorf("Expected error but got nil")
-				}
-
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
-				}
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Expected %d but got %d", tt.want, got)
-			}
-		})
-
-	}
-}
-func TestCountChar(t *testing.T) {
-	testCases := []struct {
-		name    string
-		path    string
-		want    int
-		wantErr error
-	}{
-		{
-			name: "Character count for a single file",
-			path: "testdata/file1.txt",
-			want: 21,
-		},
-		{
-			name: "Char count for a single file.",
-			path: "testdata/file2.txt",
-			want: 0,
-		},
-	}
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			data, err := readFile(tt.path)
-			if err != nil {
-				t.Fatalf("Getting error while reading file: %v", err)
-			}
-			got, err := countCharsInFile(data)
-
-			if tt.wantErr != nil {
-				if err == nil {
-					t.Errorf("Expected error but got nil")
-				}
-
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
-				}
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Expected %d but got %d", tt.want, got)
-			}
-		})
-	}
-}
-func TestAllCondition(t *testing.T) {
-	testCases := []struct {
-		name    string
-		options wordCountOptions
-		path    string
-		want    FileStat
-		wantErr error
-	}{
 		{
 			name: "Test lines, words, chars count for a single file",
 			path: "testdata/file1.txt",
@@ -186,20 +51,127 @@ func TestAllCondition(t *testing.T) {
 				chars: 21,
 			},
 		},
+		{
+			name: "wc -l with single match",
+			path: "testdata/file2.txt",
+			options: wordCountOptions{
+				isLineCount: true,
+			},
+			want: FileStat{
+				lines: 1,
+			},
+		},
+		{
+			name: "wc -w with no matches",
+			path: "testdata/file2.txt",
+			options: wordCountOptions{
+				isWordCount: true,
+			},
+			want: FileStat{
+				words: 0,
+			},
+		},
+		{
+			name: "wc -c with matches",
+			path: "testdata/file1.txt",
+			options: wordCountOptions{
+				isCharCount: true,
+			},
+			want: FileStat{
+				chars: 21,
+			},
+		},
+		{
+			name: "wc -c with multiple matches",
+			path: "testdata/file3.txt",
+			options: wordCountOptions{
+				isCharCount: true,
+			},
+			want: FileStat{
+				chars: 68,
+			},
+		},
+		{
+			name: "wc -lc with multiple matches",
+			path: "testdata/file3.txt",
+			options: wordCountOptions{
+				isLineCount: true,
+				isCharCount: true,
+			},
+			want: FileStat{
+				lines: 8,
+				chars: 68,
+			},
+		},
+		{
+			name: "wc -wc with multiple matches",
+			path: "testdata/file3.txt",
+			options: wordCountOptions{
+				isWordCount: true,
+				isCharCount: true,
+			},
+			want: FileStat{
+				words: 12,
+				chars: 68,
+			},
+		},
+		{
+			name: "wc -lw with multiple matches",
+			path: "testdata/file3.txt",
+			options: wordCountOptions{
+				isLineCount: true,
+				isWordCount: true,
+			},
+			want: FileStat{
+				lines: 8,
+				words: 12,
+			},
+		},
+		{
+			name: "wc -lwc with multiple matches",
+			path: "testdata/file3.txt",
+			options: wordCountOptions{
+				isLineCount: true,
+				isWordCount: true,
+				isCharCount: true,
+			},
+			want: FileStat{
+				lines: 8,
+				words: 12,
+				chars: 68,
+			},
+		},
+		{
+			name: "wc -lwc with multiple matches",
+			path: "testdata/file3.txt",
+			options: wordCountOptions{
+				isLineCount: true,
+				isWordCount: true,
+				isCharCount: true,
+			},
+			want: FileStat{
+				lines: 8,
+				words: 12,
+				chars: 68,
+			},
+		},
 	}
-	for _, tt := range testCases {
+	for _, tt := range testdatas {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := count(tt.path, tt.options)
 
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Errorf("Expected error but got nil")
+					t.Fatalf("Expected error but got nil")
+				}
+				if !strings.Contains(err.Error(), tt.wantErr.Error()) {
+					t.Fatalf("Expected error to contain %q but got %q", tt.wantErr.Error(), err.Error())
 				}
 
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Expected error %q but got %q", tt.wantErr, err)
-				}
 				return
+			}
+			if err != nil {
+				t.Fatalf("Unexpected error while reading file: %v", err)
 			}
 			if got.lines != tt.want.lines {
 				t.Errorf("Expected %d lines but got %d", tt.want.lines, got.lines)

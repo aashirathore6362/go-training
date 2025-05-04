@@ -121,15 +121,19 @@ func countCharsInFile(data []byte) (int, error) {
 	// if err != nil {
 	// 	return 0, err
 	// }
-	charCount := 0
-	words := strings.Fields(string(data))
-	for _, word := range words {
-		charCount += len(word)
-	}
-	if len(words) > 0 {
-		return charCount + len(words) - 1, nil
-	}
-	return 0, nil
+
+	// charCount := 0
+	// words := strings.Fields(string(data))
+	// for _, word := range words {
+	// 	charCount += len(word)
+	// }
+	// if len(words) > 0 {
+	// 	return charCount + len(words) - 1, nil
+	// }
+	// return 0, nil
+
+	return len(data), nil
+
 }
 
 func validateFile(filepath string) error {
