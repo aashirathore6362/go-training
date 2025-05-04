@@ -33,6 +33,8 @@ func main() {
 	options := optionCount(*lineflag, *wordflag, *charflag)
 
 	var wg sync.WaitGroup
+	var mux sync.Mutex // as in pointer
+	var total FileStat
 
 	for _, filename := range args {
 		wg.Add(1)
@@ -43,11 +45,18 @@ func main() {
 				fmt.Printf("Error in file %s: %v\n", file, err)
 				return
 			}
-			printStats(stats, options, file)
+			printData(stats, options, file)
+			mux.Lock()
+			total.lines += stats.lines
+			total.words += stats.words
+			total.chars += stats.chars
+			mux.Unlock()
 		}(filename)
 	}
-
 	wg.Wait()
+	if len(args) > 1 {
+		printData(total, options, "total")
+	}
 }
 
 func optionCount(lineflag, wordflag, charflag bool) wordCountOptions {
@@ -66,7 +75,7 @@ func optionCount(lineflag, wordflag, charflag bool) wordCountOptions {
 	}
 }
 
-func printStats(stat FileStat, options wordCountOptions, filename string) {
+func printData(stat FileStat, options wordCountOptions, filename string) {
 	if options.isLineCount {
 		fmt.Printf("%8d", stat.lines)
 	}
