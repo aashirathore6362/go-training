@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"sync"
 )
@@ -29,7 +29,6 @@ func main() {
 
 	flag.Parse()
 	args := flag.Args()
-
 	options := optionCount(*lineflag, *wordflag, *charflag)
 
 	var wg sync.WaitGroup
@@ -40,7 +39,7 @@ func main() {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
-			stats, err := count(file, options)
+			stats, err := count(strings.NewReader(file), options)
 			if err != nil {
 				fmt.Printf("Error in file %s: %v\n", file, err)
 				return
@@ -74,7 +73,6 @@ func optionCount(lineflag, wordflag, charflag bool) wordCountOptions {
 		isCharCount: charflag,
 	}
 }
-
 func printData(stat FileStat, options wordCountOptions, filename string) {
 	if options.isLineCount {
 		fmt.Printf("%8d", stat.lines)
@@ -87,10 +85,9 @@ func printData(stat FileStat, options wordCountOptions, filename string) {
 	}
 	fmt.Printf(" %s\n", filename)
 }
-
-func count(filepath string, options wordCountOptions) (FileStat, error) {
+func count(r io.Reader, options wordCountOptions) (FileStat, error) {
 	var stats FileStat
-	data, err := readFile(filepath)
+	data, err := readFile(r)
 	if err != nil {
 		return FileStat{}, err
 	}
@@ -115,7 +112,6 @@ func countLinesInFile(data []byte) (int, error) {
 	lines := strings.Split(string(data), "\n")
 	return len(lines), nil
 }
-
 func countWordInLine(data []byte) (int, error) {
 	// data, err := readFile(filepath)
 	// if err != nil {
@@ -124,7 +120,6 @@ func countWordInLine(data []byte) (int, error) {
 	words := strings.Fields(string(data))
 	return len(words), nil
 }
-
 func countCharsInFile(data []byte) (int, error) {
 	// data, err := readFile(filepath)
 	// if err != nil {
@@ -145,28 +140,26 @@ func countCharsInFile(data []byte) (int, error) {
 
 }
 
-func validateFile(filepath string) error {
-	info, err := os.Stat(filepath)
-	if err != nil {
-		return err
-	}
-	if info.IsDir() {
-		return fmt.Errorf("%s is a directory", filepath)
-	}
-	return nil
-}
-func readFileData(filepath string) ([]byte, error) {
-	data, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-func readFile(filepath string) ([]byte, error) {
-	if err := validateFile(filepath); err != nil {
-		return nil, err
-	}
-	return readFileData(filepath)
+//	func validateFile(filepath string) error {
+//		info, err := os.Stat(filepath)
+//		if err != nil {
+//			return err
+//		}
+//		if info.IsDir() {
+//			return fmt.Errorf("%s is a directory", filepath)
+//		}
+//		return nil
+//	}
+//
+//	func readFileData(filepath string) ([]byte, error) {
+//		data, err := os.ReadFile(filepath)
+//		if err != nil {
+//			return nil, err
+//		}
+//		return data, nil
+//	}
+func readFile(r io.Reader) ([]byte, error) {
+	return io.ReadAll(r)
 	// data, err := os.ReadFile(filepath)
 	// if err != nil {
 	// 	return nil, err
