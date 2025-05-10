@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"strings"
-	"sync"
 )
 
 type FileStat struct {
@@ -21,51 +21,72 @@ type wordCountOptions struct {
 }
 
 func main() {
-	// var options wordCountOptions
-	// options := wordCountOptions{}
 	lineflag := flag.Bool("l", false, "Count lines")
 	wordflag := flag.Bool("w", false, "Count words")
 	charflag := flag.Bool("c", false, "Count characters")
-
 	flag.Parse()
+
 	args := flag.Args()
 	options := optionCount(*lineflag, *wordflag, *charflag)
 
-	var wg sync.WaitGroup
-	var mux sync.Mutex // as in pointer
-	var total FileStat
+	if len(args) == 0 {
+		stats, err := countFromReader(os.Stdin, options)
+		if err != nil {
+			fmt.Printf("Error reading stdin: %v\n", err)
+			return
+		}
+		printData(stats, options, "")
+		return
+	}
 
 	for _, filename := range args {
-		wg.Add(1)
-		go func(file string) {
-			defer wg.Done()
-			stats, err := count(strings.NewReader(file), options)
-			if err != nil {
-				fmt.Printf("Error in file %s: %v\n", file, err)
-				return
-			}
-			printData(stats, options, file)
-			mux.Lock()
-			total.lines += stats.lines
-			total.words += stats.words
-			total.chars += stats.chars
-			mux.Unlock()
-		}(filename)
+		file, err := os.Open(filename)
+		if err != nil {
+			fmt.Printf("Error opening file %s: %v\n", filename, err)
+			continue
+		}
+		defer file.Close()
+
+		stats, err := countFromReader(file, options)
+		if err != nil {
+			fmt.Printf("Error reading file %s: %v\n", filename, err)
+			continue
+		}
+		printData(stats, options, filename)
 	}
-	wg.Wait()
-	if len(args) > 1 {
-		printData(total, options, "total")
+}
+
+func countFromReader(r io.Reader, options wordCountOptions) (FileStat, error) {
+	var stats FileStat
+
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return stats, err
 	}
+
+	if options.isLineCount {
+		stats.lines = countLines(data)
+	}
+	if options.isWordCount {
+		stats.words = countWords(data)
+	}
+	if options.isCharCount {
+		stats.chars = len(data)
+	}
+	return stats, nil
+}
+
+func countLines(data []byte) int {
+	return len(strings.Split(string(data), "\n"))
+}
+
+func countWords(data []byte) int {
+	return len(strings.Fields(string(data)))
 }
 
 func optionCount(lineflag, wordflag, charflag bool) wordCountOptions {
 	if !lineflag && !wordflag && !charflag {
-		// No flags given, enable all
-		return wordCountOptions{
-			isLineCount: true,
-			isWordCount: true,
-			isCharCount: true,
-		}
+		return wordCountOptions{true, true, true}
 	}
 	return wordCountOptions{
 		isLineCount: lineflag,
@@ -73,6 +94,7 @@ func optionCount(lineflag, wordflag, charflag bool) wordCountOptions {
 		isCharCount: charflag,
 	}
 }
+
 func printData(stat FileStat, options wordCountOptions, filename string) {
 	if options.isLineCount {
 		fmt.Printf("%8d", stat.lines)
@@ -83,86 +105,8 @@ func printData(stat FileStat, options wordCountOptions, filename string) {
 	if options.isCharCount {
 		fmt.Printf("%8d", stat.chars)
 	}
-	fmt.Printf(" %s\n", filename)
-}
-func count(r io.Reader, options wordCountOptions) (FileStat, error) {
-	var stats FileStat
-	data, err := readFile(r)
-	if err != nil {
-		return FileStat{}, err
+	if filename != "" {
+		fmt.Printf(" %s", filename)
 	}
-	// files := string(data)
-	if options.isLineCount {
-		stats.lines, _ = countLinesInFile(data)
-	}
-	if options.isWordCount {
-		stats.words, _ = countWordInLine(data)
-	}
-	if options.isCharCount {
-		stats.chars, _ = countCharsInFile(data)
-	}
-
-	return stats, nil
-}
-func countLinesInFile(data []byte) (int, error) {
-	// data, err := readFile(filepath)
-	// if err != nil {
-	// 	return 0, err
-	// }
-	lines := strings.Split(string(data), "\n")
-	return len(lines), nil
-}
-func countWordInLine(data []byte) (int, error) {
-	// data, err := readFile(filepath)
-	// if err != nil {
-	// 	return 0, err
-	// }
-	words := strings.Fields(string(data))
-	return len(words), nil
-}
-func countCharsInFile(data []byte) (int, error) {
-	// data, err := readFile(filepath)
-	// if err != nil {
-	// 	return 0, err
-	// }
-
-	// charCount := 0
-	// words := strings.Fields(string(data))
-	// for _, word := range words {
-	// 	charCount += len(word)
-	// }
-	// if len(words) > 0 {
-	// 	return charCount + len(words) - 1, nil
-	// }
-	// return 0, nil
-
-	return len(data), nil
-
-}
-
-//	func validateFile(filepath string) error {
-//		info, err := os.Stat(filepath)
-//		if err != nil {
-//			return err
-//		}
-//		if info.IsDir() {
-//			return fmt.Errorf("%s is a directory", filepath)
-//		}
-//		return nil
-//	}
-//
-//	func readFileData(filepath string) ([]byte, error) {
-//		data, err := os.ReadFile(filepath)
-//		if err != nil {
-//			return nil, err
-//		}
-//		return data, nil
-//	}
-func readFile(r io.Reader) ([]byte, error) {
-	return io.ReadAll(r)
-	// data, err := os.ReadFile(filepath)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return data, nil
+	fmt.Println()
 }
