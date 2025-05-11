@@ -167,7 +167,7 @@ func TestWordCount(t *testing.T) {
 				if !strings.Contains(err.Error(), tt.wantErr.Error()) {
 					t.Fatalf("Expected error to contain %q but got %q", tt.wantErr.Error(), err.Error())
 				}
-				return // Error matched
+				return
 			}
 			defer f.Close()
 
@@ -196,5 +196,37 @@ func TestWordCount(t *testing.T) {
 				t.Errorf("Expected %d chars but got %d", tt.want.chars, got.chars)
 			}
 		})
+	}
+}
+func TestFromStdin(t *testing.T) {
+	stdin := []byte("one\ntwo three\nfour five six")
+
+	options := wordCountOptions{
+		isLineCount: true,
+		isWordCount: true,
+		isCharCount: true,
+	}
+
+	reader := strings.NewReader(string(stdin))
+
+	got, err := countFromReader(reader, options)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	want := FileStat{
+		lines: 3,
+		words: 6,
+		chars: len(stdin),
+	}
+
+	if got.lines != want.lines {
+		t.Errorf("expected %d lines, got %d", want.lines, got.lines)
+	}
+	if got.words != want.words {
+		t.Errorf("expected %d words, got %d", want.words, got.words)
+	}
+	if got.chars != want.chars {
+		t.Errorf("expected %d chars, got %d", want.chars, got.chars)
 	}
 }

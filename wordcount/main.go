@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 )
 
 type FileStat struct {
@@ -39,20 +40,41 @@ func main() {
 		return
 	}
 
-	for _, filename := range args {
-		file, err := os.Open(filename)
-		if err != nil {
-			fmt.Printf("Error opening file %s: %v\n", filename, err)
-			continue
-		}
-		defer file.Close()
+	var wg sync.WaitGroup
+	var mux sync.Mutex
+	var total FileStat
 
-		stats, err := countFromReader(file, options)
-		if err != nil {
-			fmt.Printf("Error reading file %s: %v\n", filename, err)
-			continue
-		}
-		printData(stats, options, filename)
+	for _, filename := range args {
+		wg.Add(1)
+		go func(fname string) {
+			defer wg.Done()
+
+			file, err := os.Open(fname)
+			if err != nil {
+				fmt.Printf("Error opening file %s: %v\n", fname, err)
+				return
+			}
+			defer file.Close()
+
+			stats, err := countFromReader(file, options)
+			if err != nil {
+				fmt.Printf("Error reading file %s: %v\n", fname, err)
+				return
+			}
+
+			mux.Lock()
+			total.lines += stats.lines
+			total.words += stats.words
+			total.chars += stats.chars
+			mux.Unlock()
+
+			printData(stats, options, fname)
+		}(filename)
+	}
+	wg.Wait()
+
+	if len(args) > 1 {
+		printData(total, options, "total")
 	}
 }
 
